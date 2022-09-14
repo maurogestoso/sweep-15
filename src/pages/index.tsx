@@ -6,7 +6,7 @@ import { Card } from "../card";
 import Image from "next/image";
 
 const Home: NextPage = () => {
-  const [current, send] = useMachine(gameMachine, {});
+  const [current, send] = useMachine(gameMachine);
   const { context: ctx } = current;
   return (
     <>

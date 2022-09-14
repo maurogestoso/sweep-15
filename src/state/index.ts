@@ -1,7 +1,7 @@
 import { assign, createMachine } from "xstate";
 import { baseDeck, Card, shuffleDeck } from "../card";
 
-interface GameContext {
+export interface GameContext {
   roundsLeft: number;
   deck: Card[];
   table: Card[];
@@ -11,19 +11,21 @@ interface GameContext {
   }[];
 }
 
+export type GameEvents =
+  | { type: "start" }
+  | { type: "sweep cards" }
+  | { type: "drop card" }
+  | { type: "next round" };
+
 export const gameMachine = createMachine(
   {
     id: "Sweep 15",
     initial: "Ready to start",
-    tsTypes: {} as import("./index.typegen").Typegen0,
+    // tsTypes: {} as import("./index.typegen").Typegen0,
     predictableActionArguments: true,
     schema: {
       context: {} as GameContext,
-      events: {} as
-        | { type: "start" }
-        | { type: "sweep cards" }
-        | { type: "drop card" }
-        | { type: "next round" },
+      events: {} as GameEvents,
     },
     context: {
       roundsLeft: 3,
@@ -71,10 +73,10 @@ export const gameMachine = createMachine(
   },
   {
     guards: {
-      isRoundOver: (ctx, evt) => false,
+      isRoundOver: () => false,
     },
     actions: {
-      setUpRoundStart: assign((ctx, evt) => {
+      setUpRoundStart: assign((ctx) => {
         const newPlayers = ctx.players;
         const newTable = ctx.table;
         const deck = shuffleDeck(ctx.deck);
