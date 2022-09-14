@@ -4,6 +4,7 @@ import { useMachine } from "@xstate/react";
 import { gameMachine } from "../state";
 import { Card } from "../card";
 import Image from "next/image";
+import { PreloadImages } from "../components/PreloadImages";
 
 const Home: NextPage = () => {
   const [current, send] = useMachine(gameMachine);
@@ -14,6 +15,7 @@ const Home: NextPage = () => {
         <title>Sweep 15</title>
         <meta name="description" content="A traditional card game" />
         <link rel="icon" href="/favicon.ico" />
+        <PreloadImages />
       </Head>
 
       <main className="container mx-auto h-screen">
