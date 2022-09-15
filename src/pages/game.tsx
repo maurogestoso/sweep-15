@@ -1,45 +1,64 @@
+import React, { createContext, useContext } from "react";
 import type { NextPage } from "next";
-import { useMachine } from "@xstate/react";
-import { gameMachine } from "../state";
-import { Card } from "../card";
-import Image from "next/image";
+import { InterpreterFrom } from "xstate";
+import { useActor, useInterpret } from "@xstate/react";
 
-const Home: NextPage = () => {
-  const [current, send] = useMachine(gameMachine);
+import { gameMachine } from "../state";
+import { PlayerHand } from "../components/PlayerHand";
+import { Table } from "../components/Table";
+
+export const GlobalStateContext = createContext({
+  gameService: {} as InterpreterFrom<typeof gameMachine>,
+});
+
+export const GlobalStateProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const gameService = useInterpret(gameMachine);
+
+  return (
+    <GlobalStateContext.Provider value={{ gameService }}>
+      {children}
+    </GlobalStateContext.Provider>
+  );
+};
+
+const GameWithContext: NextPage = () => {
+  return (
+    <GlobalStateProvider>
+      <Game />
+    </GlobalStateProvider>
+  );
+};
+
+const Game = () => {
+  const { gameService } = useContext(GlobalStateContext);
+  const [current, send] = useActor(gameService);
+
   const { context: ctx } = current;
+
+  console.log(ctx.players["Player 1"]?.selected.hand);
+
   return (
     <>
-      <main className="container mx-auto h-screen">
+      <main className="container mx-auto h-screen flex flex-col gap-y-4">
         <h1 className="font-bold text-3xl">Sweep 15</h1>
-        <section className="border border-black">
+        <section className="">
           <p>{`Current state: ${current.value}`}</p>
         </section>
-        <section className="border border-black h-[500px]">
+        <section className="border border-black box-content p-8 grow">
           {current.matches("ready to start") && (
             <button onClick={() => send("start")}>Shuffle and deal</button>
           )}
           {current.matches("player turn") && (
             <div>
-              <div>
-                <h3 className="font-bold text-2xl">Table</h3>
-                <p>{`Deck: ${ctx.deck.length}`}</p>
-                {ctx.table.map((card, i) => (
-                  <Card key={i} {...card} />
-                ))}
-              </div>
+              <Table deck={ctx.deck} table={ctx.table} />
+
               <div className="flex justify-between">
-                <div>
-                  <h3 className="font-bold text-2xl">Player 1</h3>
-                  {ctx.players[0]?.hand.map((card, i) => (
-                    <Card key={i} {...card} />
-                  ))}
-                </div>
-                <div>
-                  <h3 className="font-bold text-2xl">Player 2</h3>
-                  {ctx.players[1]?.hand.map((card, i) => (
-                    <Card key={i} {...card} />
-                  ))}
-                </div>
+                <PlayerHand playerName="Player 1" />
+                <PlayerHand playerName="Player 2" />
               </div>
             </div>
           )}
@@ -49,15 +68,4 @@ const Home: NextPage = () => {
   );
 };
 
-export default Home;
-
-function Card({ imgUrl, value, suit }: Card) {
-  return (
-    <Image
-      src={imgUrl}
-      alt={`${value} of ${suit} card`}
-      width={140}
-      height={190}
-    />
-  );
-}
+export default GameWithContext;
