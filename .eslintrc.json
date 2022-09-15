@@ -7,7 +7,7 @@
   "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"],
   "rules": {
     "@typescript-eslint/ban-ts-comment": {
-      "ts-ignore": false
+      "ts-ignore": 0
     }
   }
 }
