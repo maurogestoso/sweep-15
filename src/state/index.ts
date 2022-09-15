@@ -20,7 +20,9 @@ export type GameEvents =
   | { type: "toggle table card" }
   | { type: "next round" };
 
-export const gameMachine = createMachine(
+export const gameMachine =
+  /** @xstate-layout N4IgpgJg5mDOIC5QGUDuYwAcAEBGArAHQBOYAhhAJ7YAuA9trDWcTQMRMs2KiZ2wBLGgLoA7HiAAeiALQAmAMwBOQgAZcSgCwA2bQA5lC-Du0AaEJUSK9hXLkWalqhdvxatAXw-m0GHAUJMABsySjBiWgBXYlEOdCxsAGMWCHgkED5BYTEJaQRNfBttVQB2JTkSzTt8BQU9c0sEBVwFQgLcPU0SuqV8OT0lLx94-yJg0PComLYIYjocZOIICUyhEXF0vM05OTUFdRLcXVVtJWV8BsRywmLOpQH1VU65bSGQXwSA8bCImmjY+hQKBBMDYAAWZFEECSKRW-DWOU2V1whHwNQUJV0+AI3R2lwQ2kI+3Rjm0GiUxUcbw+o0CIR+UwBdCBINoZAARqzFst0qtshtQHklCjumUSodtJjhRV8bgnoQ9Iquvs5EdcCU3NSRngxvTJn9pnCsutcogCLtapplKoauLeuL8fhMYQKk7HE8nHIlCUtX4dSQ6JEodg6AA3cJsURgSQ0bBzIM83jw-mmhAybSaNQFQ5y7QYgh5-G3Qga5rlSqlPTOX2fIjx4NhiNGhECqSIIwlEsdeyFbGaAwlfHdVovPMasquDWvN6iOgQOASGn+0gUaj0RjMVjNlNItM7Qmq1QvE59AwKfuy-o3G2nDMDDMYuQ12nffX-bcm3dehXivSuCl6Kq56dPichorY5rYkYf5Yj63jvNqAT1tCjbEB+iKCma1xyDamj9gochWk4VpDhULr-mSLz4Lo9zPv6UBkAAtqCqHoa2eTaDsRLqOqkp9gRFwWIgdoutBnFOt0uh6HRBBsam8h5moGgmAYZzGLo+LpkQWJOko5TKB0+heF4QA */
+  createMachine(
   {
     id: "Sweep 15",
     // tsTypes: {} as import("./index.typegen").Typegen0,
