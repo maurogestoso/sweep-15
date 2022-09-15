@@ -1,5 +1,6 @@
 import { assign, createMachine } from "xstate";
-import { baseDeck, Card, shuffleDeck } from "../card";
+import { baseDeck, shuffleDeck } from "../card";
+import type { Card } from "../card";
 
 export interface GameContext {
   roundsLeft: number;
@@ -15,12 +16,13 @@ export type GameEvents =
   | { type: "start" }
   | { type: "sweep cards" }
   | { type: "drop card" }
+  | { type: "toggle hand card" }
+  | { type: "toggle table card" }
   | { type: "next round" };
 
 export const gameMachine = createMachine(
   {
     id: "Sweep 15",
-    initial: "Ready to start",
     // tsTypes: {} as import("./index.typegen").Typegen0,
     predictableActionArguments: true,
     schema: {
@@ -36,11 +38,12 @@ export const gameMachine = createMachine(
         { name: "Player 2", hand: [] },
       ],
     },
+    initial: "ready to start",
     states: {
-      "Ready to start": {
+      "ready to start": {
         on: {
           start: {
-            actions: "setUpRoundStart",
+            actions: ["setUpRoundStart", "shuffleAndDeal", "setPlayerOrder"],
             target: "player turn",
           },
         },
@@ -49,17 +52,29 @@ export const gameMachine = createMachine(
         entry: "determineActivePlayer",
         always: {
           cond: "isRoundOver",
-          target: "Round over",
+          target: "round over",
         },
         on: {
-          "sweep cards": {},
-          "drop card": {},
+          "sweep cards": {
+            actions: "sweepCards",
+            cond: "setAdds15",
+          },
+          "drop card": {
+            actions: "dropCard",
+            cond: "isHandCardSelected",
+          },
+          "toggle hand card": {
+            actions: "toggleHandCard",
+          },
+          "toggle table card": {
+            actions: "toggleTableCard",
+          },
         },
       },
-      "Round over": {
+      "round over": {
         always: {
           cond: "isGameOver",
-          target: "Game over",
+          target: "game over",
         },
         on: {
           "next round": {
@@ -68,7 +83,7 @@ export const gameMachine = createMachine(
           },
         },
       },
-      "Game over": {},
+      "game over": {},
     },
   },
   {
