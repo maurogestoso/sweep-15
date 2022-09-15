@@ -1,27 +1,33 @@
 import { assign, createMachine } from "xstate";
+import invariant from "tiny-invariant";
+
 import { baseDeck, shuffleDeck } from "../card";
 import type { Card, CardId } from "../card";
+
+export interface Player {
+  name: string;
+  hand: Card[];
+  selected: {
+    hand: CardId | null;
+    table: Set<CardId>;
+  };
+}
 
 export interface GameContext {
   roundsLeft: number;
   deck: Card[];
   table: Card[];
-  players: {
-    name: string;
-    hand: Card[];
-    selected: {
-      hand: CardId | null;
-      table: Set<CardId>;
-    };
-  }[];
+  turnOrder: string[];
+  activePlayer: string;
+  players: Record<string, Player>;
 }
 
 export type GameEvents =
   | { type: "start" }
   | { type: "sweep cards" }
   | { type: "drop card" }
-  | { type: "toggle hand card" }
-  | { type: "toggle table card" }
+  | { type: "toggle hand card"; cardId: CardId }
+  | { type: "toggle table card"; cardId: CardId }
   | { type: "next round" };
 
 export const gameMachine =
@@ -31,24 +37,30 @@ export const gameMachine =
       id: "Sweep 15",
 
     // tsTypes: {} as import("./index.typegen").Typegen0,
+      schema: {
+        context: {} as GameContext,
+        events: {} as GameEvents,
+      },
       predictableActionArguments: true,
 
       context: {
         roundsLeft: 3,
         deck: baseDeck,
         table: [],
-        players: [
-          {
-            name: "Player 2",
-            hand: [],
-            selected: { hand: null, table: new Set<CardId>() },
-          },
-          {
+        turnOrder: ["Player 1", "Player 2"],
+        activePlayer: "Player 1",
+        players: {
+          "Player 1": {
             name: "Player 1",
             hand: [],
             selected: { hand: null, table: new Set<CardId>() },
           },
-        ],
+          "Player 2": {
+            name: "Player 2",
+            hand: [],
+            selected: { hand: null, table: new Set<CardId>() },
+          },
+        },
       },
 
       initial: "ready to start",
@@ -56,7 +68,7 @@ export const gameMachine =
         "ready to start": {
           on: {
             start: {
-              actions: ["setUpRoundStart", "shuffleAndDeal", "setPlayerOrder"],
+              actions: ["setUpRoundStart"],
               target: "player turn",
             },
           },
@@ -104,6 +116,50 @@ export const gameMachine =
         isRoundOver: () => false,
       },
       actions: {
+        toggleTableCard: assign((ctx, evt) => {
+          const currentPlayer = ctx.players[ctx.activePlayer];
+
+          invariant(currentPlayer);
+
+          const table = currentPlayer.selected.table;
+          if (table.has(evt.cardId)) {
+            table.delete(evt.cardId);
+          } else {
+            table.add(evt.cardId);
+          }
+
+          return {
+            ...ctx.players,
+            [ctx.activePlayer]: {
+              ...currentPlayer,
+              selected: {
+                ...currentPlayer.selected,
+                table,
+              },
+            },
+          };
+        }),
+        toggleHandCard: assign((ctx, evt) => {
+          const currentPlayer = ctx.players[ctx.activePlayer];
+
+          invariant(currentPlayer);
+
+          return {
+            players: {
+              ...ctx.players,
+              [ctx.activePlayer]: {
+                ...currentPlayer,
+                selected: {
+                  ...currentPlayer.selected,
+                  hand:
+                    evt.cardId === currentPlayer.selected.hand
+                      ? null
+                      : evt.cardId,
+                },
+              },
+            },
+          };
+        }),
         setUpRoundStart: assign((ctx) => {
           const newPlayers = ctx.players;
           const newTable = ctx.table;
@@ -112,11 +168,11 @@ export const gameMachine =
           for (let i = 0; i < 3; i += 1) {
             let topCard = deck.shift();
             if (!topCard) break;
-            ctx.players[0]?.hand.push(topCard);
+            ctx.players["Player 1"]?.hand.push(topCard);
 
             topCard = deck.shift();
             if (!topCard) break;
-            ctx.players[1]?.hand.push(topCard);
+            ctx.players["Player 2"]?.hand.push(topCard);
           }
 
           for (let i = 0; i < 4; i += 1) {
@@ -129,6 +185,7 @@ export const gameMachine =
             deck,
             players: newPlayers,
             table: newTable,
+            turnOrder: ["Player 1", "Player 2"], // TODO: shuffle
           };
         }),
       },
