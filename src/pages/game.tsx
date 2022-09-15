@@ -16,7 +16,7 @@ export const GlobalStateProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const gameService = useInterpret(gameMachine);
+  const gameService = useInterpret(gameMachine); // @ts-ignore
 
   return (
     <GlobalStateContext.Provider value={{ gameService }}>
