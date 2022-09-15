@@ -36,7 +36,7 @@ export const gameMachine =
     {
       id: "Sweep 15",
 
-    // tsTypes: {} as import("./index.typegen").Typegen0,
+      tsTypes: {} as import("./index.typegen").Typegen0,
       schema: {
         context: {} as GameContext,
         events: {} as GameEvents,
